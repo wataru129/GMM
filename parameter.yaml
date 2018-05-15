@@ -24,13 +24,13 @@ general:
 # Paths
 # ==========================================================
 path:
-  data: data/
+  data: dataset/
 
   base: system/baseline_dcase2016_task1/
-  features: features/
-  feature_normalizers: feature_normalizers/
-  models: acoustic_models/
-  results: evaluation_results/
+  features: save_data/features/
+  feature_normalizers: save_data/feature_normalizers/
+  models: save_data/acoustic_models/
+  results: save_data/evaluation_results/
 
   challenge_results: challenge_submission/task_1_acoustic_scene_classification/
 
