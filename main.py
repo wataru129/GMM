@@ -4,9 +4,8 @@ import os
 from src.main_function   import *
 
 # パラメータ設定ファイルの指定
-parameter_file = '/Users/wataru/Laboratry/reserch/feature-extract/parameter.yaml'
-path_file      = '/Users/wataru/Laboratry/reserch/feature-extract/path.yaml'
-# 設定パラメータの読み込み
+parameter_file = './setting/parameter.yaml'
+# 設定パラメータ(yaml)の読み込み
 params = load_parameters(parameter_file)
 #params = process_parameters(params)
 dataset = eval(params['general']['development_dataset'])(data_path=params['path']['data'])
