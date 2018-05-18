@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import time
+import pandas as pd
 from src.main_function   import *
 
 start = time.time()
