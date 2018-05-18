@@ -255,3 +255,132 @@ class TUTAcousticScenes_2016_DevelopmentSet(Dataset):
             finally:
                 f.close()
             foot()
+
+class TUTAcousticScenes_2016_EvaluationSet(Dataset):
+    """TUT Acoustic scenes 2016 evaluation dataset
+
+    This dataset is used in DCASE2016 - Task 1, Acoustic scene classification
+
+    """
+
+    def __init__(self, data_path='data'):
+        Dataset.__init__(self, data_path=data_path, name='TUT-acoustic-scenes-2016-evaluation')
+
+        self.authors = 'Annamaria Mesaros, Toni Heittola, and Tuomas Virtanen'
+        self.name_remote = 'TUT Acoustic Scenes 2016, evaluation dataset'
+        self.url = 'http://www.cs.tut.fi/sgn/arg/dcase2016/download/'
+        self.audio_source = 'Field recording'
+        self.audio_type = 'Natural'
+        self.recording_device_model = 'Roland Edirol R-09'
+        self.microphone_model = 'Soundman OKM II Klassik/studio A3 electret microphone'
+
+        self.evaluation_folds = 1
+
+        self.package_list = [
+            {
+                'remote_package': None,
+                'local_package': None,
+                'local_audio_path': os.path.join(self.local_path, 'audio'),
+            },
+            {
+                'remote_package': 'https://zenodo.org/record/165995/files/TUT-acoustic-scenes-2016-evaluation.doc.zip',
+                'local_package': os.path.join(self.local_path, 'TUT-acoustic-scenes-2016-evaluation.doc.zip'),
+                'local_audio_path': os.path.join(self.local_path, 'audio'),
+            },
+            {
+                'remote_package': 'https://zenodo.org/record/165995/files/TUT-acoustic-scenes-2016-evaluation.audio.1.zip',
+                'local_package': os.path.join(self.local_path, 'TUT-acoustic-scenes-2016-evaluation.audio.1.zip'),
+                'local_audio_path': os.path.join(self.local_path, 'audio'),
+            },
+            {
+                'remote_package': 'https://zenodo.org/record/165995/files/TUT-acoustic-scenes-2016-evaluation.audio.2.zip',
+                'local_package': os.path.join(self.local_path, 'TUT-acoustic-scenes-2016-evaluation.audio.2.zip'),
+                'local_audio_path': os.path.join(self.local_path, 'audio'),
+            },
+            {
+                'remote_package': 'https://zenodo.org/record/165995/files/TUT-acoustic-scenes-2016-evaluation.audio.3.zip',
+                'local_package': os.path.join(self.local_path, 'TUT-acoustic-scenes-2016-evaluation.audio.3.zip'),
+                'local_audio_path': os.path.join(self.local_path, 'audio'),
+            },
+            {
+                'remote_package': 'https://zenodo.org/record/165995/files/TUT-acoustic-scenes-2016-evaluation.meta.zip',
+                'local_package': os.path.join(self.local_path, 'TUT-acoustic-scenes-2016-evaluation.meta.zip'),
+                'local_audio_path': os.path.join(self.local_path, 'audio'),
+            }
+        ]
+
+    def on_after_extract(self):
+        """After dataset packages are downloaded and extracted, meta-files are checked.
+
+        Parameters
+        ----------
+        nothing
+
+        Returns
+        -------
+        nothing
+
+        """
+
+        eval_filename = os.path.join(self.evaluation_setup_path, 'evaluate.txt')
+
+        if not os.path.isfile(self.meta_file) and os.path.isfile(eval_filename):
+            section_header('Generating meta file for dataset')
+            meta_data = {}
+
+            f = open(eval_filename, 'rt')
+            reader = csv.reader(f, delimiter='\t')
+            for row in reader:
+                if row[0] not in meta_data:
+                    meta_data[row[0]] = row[1]
+
+            f.close()
+
+            f = open(self.meta_file, 'wt')
+            try:
+                writer = csv.writer(f, delimiter='\t')
+                for file in meta_data:
+                    raw_path, raw_filename = os.path.split(file)
+                    relative_path = self.absolute_to_relative(raw_path)
+                    label = meta_data[file]
+                    writer.writerow((os.path.join(relative_path, raw_filename), label))
+            finally:
+                f.close()
+            foot()
+
+    def train(self, fold=0):
+        raise IOError('Train setup not available.')
+
+    def test(self, fold=0):
+        """List of testing items.
+
+        Parameters
+        ----------
+        fold : int > 0 [scalar]
+            Fold id, if zero all meta data is returned.
+            (Default value=0)
+
+        Returns
+        -------
+        list : list of dicts
+            List containing all meta data assigned to testing set for given fold.
+
+        """
+
+        if fold not in self.evaluation_data_test:
+            self.evaluation_data_test[fold] = []
+            if fold > 0:
+                with open(os.path.join(self.evaluation_setup_path, 'fold' + str(fold) + '_test.txt'), 'rt') as f:
+                    for row in csv.reader(f, delimiter='\t'):
+                        self.evaluation_data_test[fold].append({'file': self.relative_to_absolute_path(row[0])})
+            else:
+                data = []
+                files = []
+                for item in self.audio_files:
+                    if self.relative_to_absolute_path(item) not in files:
+                        data.append({'file': self.relative_to_absolute_path(item)})
+                        files.append(self.relative_to_absolute_path(item))
+
+                self.evaluation_data_test[fold] = data
+
+        return self.evaluation_data_test[fold]
