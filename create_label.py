@@ -28,3 +28,6 @@ df = pd.concat([df1, df2, df3, df4])
 df = df.reset_index(drop=True)
 df.to_csv('train.csv')
 df
+
+a = ["a","b"]
+a

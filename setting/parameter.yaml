@@ -35,6 +35,15 @@ path:
   challenge_results: challenge_submission/task_1_acoustic_scene_classification/
 
 # ==========================================================
+# Paths
+# ==========================================================
+dataset_path:
+  train: dataset/train
+  evaluate: dataset/evaluate
+  train_dataset: train_data/audio
+  evaluate_dataset: evaluate/audio
+
+# ==========================================================
 # Feature extraction
 # ==========================================================
 features:

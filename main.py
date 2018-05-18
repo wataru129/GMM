@@ -39,7 +39,6 @@ do_feature_normalization(dataset=dataset,
                                  dataset_evaluation_mode=dataset_evaluation_mode,
                                  overwrite=params['general']['overwrite'])
 print("trainning")
-
 do_system_training(dataset=dataset,
                            model_path=params['path']['models'],
                            feature_normalizer_path=params['path']['feature_normalizers'],
@@ -52,25 +51,21 @@ do_system_training(dataset=dataset,
                            clean_audio_errors=params['classifier']['audio_error_handling']['clean_data'],
                            overwrite=params['general']['overwrite']
                            )
-
+##分類部部分###
 print("create challenge dataset")
 challenge_dataset = eval(params['general']['challenge_dataset'])(data_path=params['path']['data'])
 result_path = params['path']['results']
-if not params['general']['challenge_submission_mode']:
-        # Extract feature if not running in challenge submission mode.
-        # Collect test files
-        files = []
-        for fold in challenge_dataset.folds(mode=dataset_evaluation_mode):
-            for item_id, item in enumerate(dataset.test(fold)):
-                if item['file'] not in files:
+files = []
+for fold in challenge_dataset.folds(mode=dataset_evaluation_mode):
+    for item_id, item in enumerate(dataset.test(fold)):
+        if item['file'] not in files:
                     files.append(item['file'])
-        files = sorted(files)
-            # Go through files and make sure all features are extracted
-        do_feature_extraction(files=files,
-                                  dataset=challenge_dataset,
-                                  feature_path=params['path']['features'],
-                                  params=params['features'],
-                                  overwrite=params['general']['overwrite'])
+files = sorted(files)
+do_feature_extraction(files=files,
+                        dataset=challenge_dataset,
+                        feature_path=params['path']['features'],
+                        params=params['features'],
+                        overwrite=params['general']['overwrite'])
 print("testing")
 do_system_testing(dataset=challenge_dataset,
                   feature_path=params['path']['features'],

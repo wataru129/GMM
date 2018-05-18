@@ -3,25 +3,14 @@
 #########################################################
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
 import socket
 import locale
 import zipfile
 import tarfile
 from sklearn.cross_validation import StratifiedShuffleSplit, KFold
-
-
 from src.files import *
-
-
 class Dataset(object):
-    """Dataset base class.
-
-    The specific dataset classes are inherited from this class, and only needed methods are reimplemented.
-
-    """
-
     def __init__(self, data_path='data', name='dataset'):
         self.name = name
         self.local_path = os.path.join(data_path, self.name)
