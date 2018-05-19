@@ -89,25 +89,20 @@ class FeatureNormalizer(object):
         self.S2 = 0
         self.std = 0
         return self
-
     def __exit__(self, type, value, traceback):
         # Finalize accumulated calculation
         self.finalize()
-
     def accumulate(self, stat):
         self.N += stat['N']
         self.mean += stat['mean']
         self.S1 += stat['S1']
         self.S2 += stat['S2']
-
     def finalize(self):
         # Finalize statistics
         self.mean = self.S1 / self.N
         self.std = numpy.sqrt((self.N * self.S2 - (self.S1 * self.S1)) / (self.N * (self.N - 1)))
-
         # In case we have very brain-death material we get std = Nan => 0.0
         self.std = numpy.nan_to_num(self.std)
-
         self.mean = numpy.reshape(self.mean, [1, -1])
         self.std = numpy.reshape(self.std, [1, -1])
 
