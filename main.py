@@ -17,14 +17,12 @@ challenge_dataset = eval(params['general']['challenge_dataset'])(data_path=param
 result_path = params['path']['results']
 
 files = []
-dataset_evaluation_mode = 'folds'
-for fold in dataset.folds(mode=dataset_evaluation_mode):
-    for item_id, item in enumerate(dataset.train(fold)):
-        if item['file'] not in files:
-            files.append(item['file'])
-    for item_id, item in enumerate(dataset.test(fold)):
-        if item['file'] not in files:
-            files.append(item['file'])
+for item_id, item in enumerate(dataset.train(0)):
+    if item['file'] not in files:
+        files.append(item['file'])
+for item_id, item in enumerate(dataset.test(0)):
+    if item['file'] not in files:
+        files.append(item['file'])
 files = sorted(files)
 # ファイルを調べ、すべての特徴量が抽出されていることを確認する
 print("feature_extract")

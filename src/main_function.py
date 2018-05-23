@@ -9,24 +9,20 @@ import textwrap
 import copy
 
 from sklearn import mixture
-
+#特徴量のファイル作成
 def get_feature_filename(audio_file, path, extension='cpickle'):
     audio_filename = os.path.split(audio_file)[1]
     return os.path.join(path, os.path.splitext(audio_filename)[0] + '.' + extension)
-# 特徴量抽出を実行するための関数
+#正規化のファイル取得
 def get_feature_normalizer_filename(fold, path, extension='cpickle'):
     return os.path.join(path, 'scale_fold' + str(fold) + '.' + extension)
-
+#モデルのファイル取得
 def get_model_filename(fold, path, extension='cpickle'):
     return os.path.join(path, 'model_fold' + str(fold) + '.' + extension)
-
+#結果のファイル取得
 def get_result_filename(fold, path, extension='txt'):
-    if fold == 0:
-        return os.path.join(path, 'results.' + extension)
-    else:
-        return os.path.join(path, 'results_fold' + str(fold) + '.' + extension)
-
-
+    return os.path.join(path, 'results.' + extension)
+#特徴量抽出を実行
 def do_feature_extraction(files, dataset, feature_path, params, overwrite=False):
     for file_id, audio_filename in enumerate(files):
         # 特徴量のファイルを獲得
@@ -42,7 +38,7 @@ def do_feature_extraction(files, dataset, feature_path, params, overwrite=False)
                                               acceleration_params=params['mfcc_acceleration'])
         # オブジェクトの保存
         save_data(current_feature_file, feature_data)
-
+# 特徴量の正規化実行
 def do_feature_normalization(dataset, feature_normalizer_path, feature_path, dataset_evaluation_mode='folds', overwrite=False):
     # Check that target path exists, create if not
     for fold in dataset.folds(mode=dataset_evaluation_mode):
@@ -185,14 +181,9 @@ def do_system_evaluation(dataset, result_path, dataset_evaluation_mode='folds'):
         dcase2016_scene_metric_fold = DCASE2016_SceneClassification_Metrics(class_list=dataset.scene_labels)
         results = []
         result_filename = get_result_filename(fold=fold, path=result_path)
-
-        if os.path.isfile(result_filename):
-            with open(result_filename, 'rt') as f:
-                for row in csv.reader(f, delimiter='\t'):
-                    results.append(row)
-        else:
-            raise IOError("Result file not found [%s]" % result_filename)
-
+        with open(result_filename, 'rt') as f:
+            for row in csv.reader(f, delimiter='\t'):
+                results.append(row)
         y_true = []
         y_pred = []
         for result in results:

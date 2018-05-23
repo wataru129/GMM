@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-#from sklearn.cross_validation import StratifiedShuffleSplit, KFold
 from src.files import *
 class Dataset(object):
     def __init__(self, data_path='data', name='dataset'):
@@ -41,66 +40,9 @@ class Dataset(object):
 class DevelopmentSet(Dataset):
     def __init__(self, data_path='data'):
         Dataset.__init__(self, data_path=data_path, name='development')
-        self.evaluation_folds = 4
-    def on_after_extract(self):
-        if not os.path.isfile(self.meta_file):
-            meta_data = {}
-            for fold in xrange(1, self.evaluation_folds):
-                # Read train files in
-                train_filename = os.path.join(self.evaluation_setup_path, 'fold' + str(fold) + '_train.txt')
-                f = open(train_filename, 'rt')
-                reader = csv.reader(f, delimiter='\t')
-                for row in reader:
-                    if row[0] not in meta_data:
-                        meta_data[row[0]] = row[1]
-                f.close()
-                # Read evaluation files in
-                eval_filename = os.path.join(self.evaluation_setup_path, 'fold' + str(fold) + '_evaluate.txt')
-                f = open(eval_filename, 'rt')
-                reader = csv.reader(f, delimiter='\t')
-                for row in reader:
-                    if row[0] not in meta_data:
-                        meta_data[row[0]] = row[1]
-                f.close()
-
-            f = open(self.meta_file, 'wt')
-            try:
-                writer = csv.writer(f, delimiter='\t')
-                for file in meta_data:
-                    raw_path, raw_filename = os.path.split(file)
-                    relative_path = self.absolute_to_relative(raw_path)
-                    label = meta_data[file]
-                    writer.writerow((os.path.join(relative_path, raw_filename), label))
-            finally:
-                f.close()
-            foot()
-
 class EvaluationSet(Dataset):
     def __init__(self, data_path='data'):
         Dataset.__init__(self, data_path=data_path, name='evaluation')
-        self.evaluation_folds = 1
-    def on_after_extract(self):
-        eval_filename = os.path.join(self.evaluation_setup_path, 'evaluate.txt')
-        if not os.path.isfile(self.meta_file) and os.path.isfile(eval_filename):
-            section_header('Generating meta file for dataset')
-            meta_data = {}
-            f = open(eval_filename, 'rt')
-            reader = csv.reader(f, delimiter='\t')
-            for row in reader:
-                if row[0] not in meta_data:
-                    meta_data[row[0]] = row[1]
-            f.close()
-            f = open(self.meta_file, 'wt')
-            try:
-                writer = csv.writer(f, delimiter='\t')
-                for file in meta_data:
-                    raw_path, raw_filename = os.path.split(file)
-                    relative_path = self.absolute_to_relative(raw_path)
-                    label = meta_data[file]
-                    writer.writerow((os.path.join(relative_path, raw_filename), label))
-            finally:
-                f.close()
-            foot()
     def test(self, fold=0):
         if fold not in self.evaluation_data_test:
             self.evaluation_data_test[fold] = []
