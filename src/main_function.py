@@ -105,31 +105,19 @@ def do_system_training(dataset, model_path, feature_normalizer_path, feature_pat
 
 def do_system_testing(dataset, result_path, feature_path, model_path, feature_params,
                       dataset_evaluation_mode='folds', classifier_method='gmm', clean_audio_errors=False, overwrite=False):
-    if classifier_method != 'gmm':
-        raise ValueError("Unknown classifier method ["+classifier_method+"]")
-
-    # Check that target path exists, create if not
-    check_path(result_path)
-
     for fold in dataset.folds(mode=dataset_evaluation_mode):
         current_result_file = get_result_filename(fold=fold, path=result_path)
         if not os.path.isfile(current_result_file) or overwrite:
             results = []
-
             # Load class model container
             model_filename = get_model_filename(fold=fold, path=model_path)
-            if os.path.isfile(model_filename):
-                model_container = load_data(model_filename)
-            else:
-                raise IOError("Model file not found [%s]" % model_filename)
-
+            model_container = load_data(model_filename)
             file_count = len(dataset.test(fold))
             for file_id, item in enumerate(dataset.test(fold)):
                 progress(title_text='Testing',
                          fold=fold,
                          percentage=(float(file_id) / file_count),
                          note=os.path.split(item['file'])[1])
-
                 # Load features
                 feature_filename = get_feature_filename(audio_file=item['file'], path=feature_path)
 
@@ -137,11 +125,7 @@ def do_system_testing(dataset, result_path, feature_path, model_path, feature_pa
                     feature_data = load_data(feature_filename)['feat']
                 else:
                     # Load audio
-                    if os.path.isfile(dataset.relative_to_absolute_path(item['file'])):
-                        y, fs = load_audio(filename=dataset.relative_to_absolute_path(item['file']), mono=True, fs=feature_params['fs'])
-                    else:
-                        raise IOError("Audio file not found [%s]" % (item['file']))
-
+                    y, fs = load_audio(filename=dataset.relative_to_absolute_path(item['file']), mono=True, fs=feature_params['fs'])
                     feature_data = feature_extraction(y=y,
                                                       fs=fs,
                                                       include_mfcc0=feature_params['include_mfcc0'],
@@ -193,79 +177,6 @@ def do_classification_gmm(feature_data, model_container):
 
     classification_result_id = numpy.argmax(logls)
     return model_container['models'].keys()[classification_result_id]
-
-def do_system_testing(dataset, result_path, feature_path, model_path, feature_params,
-                      dataset_evaluation_mode='folds', classifier_method='gmm', clean_audio_errors=False, overwrite=False):
-    for fold in dataset.folds(mode=dataset_evaluation_mode):
-        current_result_file = get_result_filename(fold=fold, path=result_path)
-        if not os.path.isfile(current_result_file) or overwrite:
-            results = []
-
-            # Load class model container
-            model_filename = get_model_filename(fold=fold, path=model_path)
-            if os.path.isfile(model_filename):
-                model_container = load_data(model_filename)
-            else:
-                raise IOError("Model file not found [%s]" % model_filename)
-
-            file_count = len(dataset.test(fold))
-            for file_id, item in enumerate(dataset.test(fold)):
-                progress(title_text='Testing',
-                         fold=fold,
-                         percentage=(float(file_id) / file_count),
-                         note=os.path.split(item['file'])[1])
-
-                # Load features
-                feature_filename = get_feature_filename(audio_file=item['file'], path=feature_path)
-
-                if os.path.isfile(feature_filename):
-                    feature_data = load_data(feature_filename)['feat']
-                else:
-                    # Load audio
-                    if os.path.isfile(dataset.relative_to_absolute_path(item['file'])):
-                        y, fs = load_audio(filename=dataset.relative_to_absolute_path(item['file']), mono=True, fs=feature_params['fs'])
-                    else:
-                        raise IOError("Audio file not found [%s]" % (item['file']))
-
-                    feature_data = feature_extraction(y=y,
-                                                      fs=fs,
-                                                      include_mfcc0=feature_params['include_mfcc0'],
-                                                      include_delta=feature_params['include_delta'],
-                                                      include_acceleration=feature_params['include_acceleration'],
-                                                      mfcc_params=feature_params['mfcc'],
-                                                      delta_params=feature_params['mfcc_delta'],
-                                                      acceleration_params=feature_params['mfcc_acceleration'],
-                                                      statistics=False)['feat']
-
-                # Scale features
-                feature_data = model_container['normalizer'].normalize(feature_data)
-
-                if clean_audio_errors:
-                    current_errors = dataset.file_error_meta(item['file'])
-                    if current_errors:
-                        removal_mask = numpy.ones((feature_data.shape[0]), dtype=bool)
-                        for error_event in current_errors:
-                            onset_frame = int(numpy.floor(error_event['event_onset'] / feature_params['hop_length_seconds']))
-                            offset_frame = int(numpy.ceil(error_event['event_offset'] / feature_params['hop_length_seconds']))
-                            if offset_frame > feature_data.shape[0]:
-                                offset_frame = feature_data.shape[0]
-                            removal_mask[onset_frame:offset_frame] = False
-                        feature_data = feature_data[removal_mask, :]
-
-                # Do classification for the block
-                if classifier_method == 'gmm':
-                    current_result = do_classification_gmm(feature_data, model_container)
-                else:
-                    raise ValueError("Unknown classifier method ["+classifier_method+"]")
-
-                # Store the result
-                results.append((dataset.absolute_to_relative(item['file']), current_result))
-
-            # Save testing results
-            with open(current_result_file, 'wt') as f:
-                writer = csv.writer(f, delimiter='\t')
-                for result_item in results:
-                    writer.writerow(result_item)
 
 def do_system_evaluation(dataset, result_path, dataset_evaluation_mode='folds'):
     dcase2016_scene_metric = DCASE2016_SceneClassification_Metrics(class_list=dataset.scene_labels)
