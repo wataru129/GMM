@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from src.files import *
+import csv
 class Dataset(object):
     def __init__(self, data_path='data', name='dataset'):
         self.name = name
@@ -25,18 +26,18 @@ class Dataset(object):
             return [0]
     def relative_to_absolute_path(self, path):
         return os.path.abspath(os.path.join(self.local_path, path))
-    def train(self, fold=0):
-        if fold not in self.evaluation_data_train:
-            self.evaluation_data_train[fold] = []
-            print(os.path.join(self.evaluation_setup_path, 'fold' + str(fold) + '_train.txt'))
-            with open(os.path.join(self.evaluation_setup_path, 'fold' + str(fold) + '_train.txt'), 'rt') as f:
-                for row in csv.reader(f, delimiter='\t'):
-                    # Scene meta
-                    self.evaluation_data_train[fold].append({
-                        'file': self.relative_to_absolute_path(row[0]),
-                        'scene_label': row[1]
-                    })
-        return self.evaluation_data_train[fold]
+    def train(self):
+        self.evaluation_data_train = []
+        print(os.path.join(self.evaluation_setup_path,  'train.csv'))
+        csv_file = open(os.path.join(self.evaluation_setup_path,  'train.csv'), "r", encoding="ms932", errors="", newline="" )
+        f = csv.reader(csv_file, delimiter=",", doublequote=True, lineterminator="\r\n", quotechar='"', skipinitialspace=True)
+        next(f)
+        for row in f:
+            self.evaluation_data_train.append({
+                'file': self.relative_to_absolute_path(row[1]),
+                'scene_label': row[2]
+            })
+        return self.evaluation_data_train
 class DevelopmentSet(Dataset):
     def __init__(self, data_path='data'):
         Dataset.__init__(self, data_path=data_path, name='development')

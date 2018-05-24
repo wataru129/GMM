@@ -1,6 +1,7 @@
 import os
 from src.feature import *
-from src.dataset import *
+#from src.dataset import *
+from src.my_dataset import *
 from src.files   import *
 import numpy
 import csv
@@ -14,8 +15,8 @@ def get_feature_filename(audio_file, path, extension='cpickle'):
     audio_filename = os.path.split(audio_file)[1]
     return os.path.join(path, os.path.splitext(audio_filename)[0] + '.' + extension)
 #正規化のファイル取得
-def get_feature_normalizer_filename(fold, path, extension='cpickle'):
-    return os.path.join(path, 'scale_fold' + str(fold) + '.' + extension)
+def get_feature_normalizer_filename(path, extension='cpickle'):
+    return os.path.join(path, 'scale' + '.' + extension)
 #モデルのファイル取得
 def get_model_filename(fold, path, extension='cpickle'):
     return os.path.join(path, 'model_fold' + str(fold) + '.' + extension)
@@ -39,25 +40,17 @@ def do_feature_extraction(files, dataset, feature_path, params, overwrite=False)
         # オブジェクトの保存
         save_data(current_feature_file, feature_data)
 # 特徴量の正規化実行
-def do_feature_normalization(dataset, feature_normalizer_path, feature_path, dataset_evaluation_mode='folds', overwrite=False):
-    # Check that target path exists, create if not
-    for fold in dataset.folds(mode=dataset_evaluation_mode):
-        current_normalizer_file = get_feature_normalizer_filename(fold=fold, path=feature_normalizer_path)
-
-        if not os.path.isfile(current_normalizer_file) or overwrite:
-            # Initialize statistics
-            file_count = len(dataset.train(fold))
-            normalizer = FeatureNormalizer()
-
-            for item_id, item in enumerate(dataset.train(fold)):                # Load features
-                feature_data = load_data(get_feature_filename(audio_file=item['file'], path=feature_path))['stat']
-                # Accumulate statistics
-                normalizer.accumulate(feature_data)
-
-            # Calculate normalization factors
-            normalizer.finalize()
-            # Save
-            save_data(current_normalizer_file, normalizer)
+def do_feature_normalization(dataset, feature_normalizer_path, feature_path):
+    current_normalizer_file = get_feature_normalizer_filename(path=feature_normalizer_path)
+    normalizer = FeatureNormalizer()
+    for item_id, item in enumerate(dataset.train()):# Load features
+        feature_data = load_data(get_feature_filename(audio_file=item['file'], path=feature_path))['stat']
+        # Accumulate statistics
+        normalizer.accumulate(feature_data)
+    # Calculate normalization factors
+    normalizer.finalize()
+    # Save
+    save_data(current_normalizer_file, normalizer)
 
 def process_parameters(params):
     # Convert feature extraction window and hop sizes seconds to samples
@@ -69,19 +62,19 @@ def process_parameters(params):
     classifier_params = copy.copy(params['classifier'])
     return params
 def do_system_training(dataset, model_path, feature_normalizer_path, feature_path, feature_params, classifier_params,
-                       dataset_evaluation_mode='folds', classifier_method='gmm', clean_audio_errors=False, overwrite=False):
-    for fold in dataset.folds(mode=dataset_evaluation_mode):
+                       classifier_method='gmm', clean_audio_errors=False, overwrite=False):
+    for fold in dataset.folds():
         current_model_file = get_model_filename(fold=fold, path=model_path)
         if not os.path.isfile(current_model_file) or overwrite:
             # Load normalizer
-            feature_normalizer_filename = get_feature_normalizer_filename(fold=fold, path=feature_normalizer_path)
+            feature_normalizer_filename = get_feature_normalizer_filename(path=feature_normalizer_path)
             normalizer = load_data(feature_normalizer_filename)
             # Initialize model container
             model_container = {'normalizer': normalizer, 'models': {}}
             # Collect training examples
-            file_count = len(dataset.train(fold))
+            file_count = len(dataset.train())
             data = {}
-            for item_id, item in enumerate(dataset.train(fold)):
+            for item_id, item in enumerate(dataset.train()):
                 # Load features
                 feature_filename = get_feature_filename(audio_file=item['file'], path=feature_path)
                 feature_data = load_data(feature_filename)['feat']
