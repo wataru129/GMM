@@ -53,9 +53,12 @@ do_system_training(dataset=dataset,
                    )
 ##分類部部分###
 print("create challenge dataset")
+challenge_dataset = eval(params['general']['challenge_dataset'])(data_path=params['path']['data'])
+result_path = params['path']['results']
+challenge_dataset.fetch()
 files = []
-for fold in challenge_dataset.folds(mode=dataset_evaluation_mode):
-    for item_id, item in enumerate(dataset.test(fold)):
+for fold in challenge_dataset.folds():
+    for item_id, item in enumerate(challenge_dataset.test(fold)):
         if item['file'] not in files:
                     files.append(item['file'])
 files = sorted(files)

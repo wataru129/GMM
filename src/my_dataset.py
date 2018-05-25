@@ -9,11 +9,34 @@ class Dataset(object):
         self.local_path = os.path.join(data_path, self.name)
         self.evaluation_setup_folder = 'evaluation_setup'
         self.evaluation_setup_path = os.path.join(self.local_path, self.evaluation_setup_folder)
-        self.filelisthash_filename = 'filelist.python.hash'
+        self.meta_file = os.path.join(self.local_path, self.evaluation_setup_folder, 'meta.txt')
         self.evaluation_folds = 1
         self.files = None
         self.evaluation_data_train = {}
         self.evaluation_data_test = {}
+    @property
+    def meta(self):
+        self.meta_data = []
+        meta_id = 0
+        f = open(self.meta_file, 'rt')
+        try:
+            reader = csv.reader(f, delimiter='\t')
+            for row in reader:
+                # Scene meta
+                self.meta_data.append({'file': row[0], 'scene_label': row[1].rstrip()})
+                meta_id += 1
+        finally:
+            f.close()
+        return self.meta_data
+
+    @property
+    def scene_labels(self):
+        labels = []
+        for item in self.meta:
+            if 'scene_label' in item and item['scene_label'] not in labels:
+                labels.append(item['scene_label'])
+        labels.sort()
+        return labels
     def test(self, fold=0):
         with open(os.path.join(self.evaluation_setup_path, 'fold' + str(fold) + '_test.txt'), 'rt') as f:
             for row in csv.reader(f, delimiter='\t'):
@@ -44,10 +67,14 @@ class DevelopmentSet(Dataset):
 class EvaluationSet(Dataset):
     def __init__(self, data_path='data'):
         Dataset.__init__(self, data_path=data_path, name='evaluation')
-    def test(self, fold=0):
-        if fold not in self.evaluation_data_test:
-            self.evaluation_data_test[fold] = []
-            with open(os.path.join(self.evaluation_setup_path, 'fold' + str(fold) + '_test.txt'), 'rt') as f:
-                for row in csv.reader(f, delimiter='\t'):
-                    self.evaluation_data_test[fold].append({'file': self.relative_to_absolute_path(row[0])})
-        return self.evaluation_data_test[fold]
+    def test(self):
+        print(os.path.join(self.evaluation_setup_path,  'test.csv'))
+        self.evaluation_data_test = []
+        csv_file = open(os.path.join(self.evaluation_setup_path,  'test.csv'), "r", encoding="ms932", errors="", newline="" )
+        f = csv.reader(csv_file, delimiter=",", doublequote=True, lineterminator="\r\n", quotechar='"', skipinitialspace=True)
+        next(f)
+        for row in f:
+            self.evaluation_data_test.append({
+                'file': self.relative_to_absolute_path(row[1])
+            })
+        return self.evaluation_data_test
