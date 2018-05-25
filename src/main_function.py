@@ -1,4 +1,4 @@
-from os import path
+import os
 from src.feature import *
 from src.my_dataset import *
 from src.files   import *
@@ -10,16 +10,16 @@ from sklearn import mixture
 #特徴量のファイル作成
 def get_feature_filename(audio_file, path, extension='cpickle'):
     audio_filename = path.split(audio_file)[1]
-    return path.join(path, path.splitext(audio_filename)[0] + '.' + extension)
+    return os.path.join(path, os.path.splitext(audio_filename)[0] + '.' + extension)
 #正規化のファイル取得
 def get_feature_normalizer_filename(path, extension='cpickle'):
-    return path.join(path, 'scale' + '.' + extension)
+    return os.path.join(path, 'scale' + '.' + extension)
 #モデルのファイル取得
 def get_model_filename(path, extension='cpickle'):
-    return path.join(path, 'model'  + '.' + extension)
+    return os.path.join(path, 'model'  + '.' + extension)
 #結果のファイル取得
 def get_result_filename(path, extension='txt'):
-    return path.join(path, 'results.' + extension)
+    return os.path.join(path, 'results.' + extension)
 #特徴量抽出を実行
 def do_feature_extraction(files, dataset, feature_path, params, overwrite=False):
     for file_id, audio_filename in enumerate(files):
