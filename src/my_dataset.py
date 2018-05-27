@@ -6,6 +6,7 @@ import csv
 class Dataset(object):
     def __init__(self, data_path='data', name='dataset'):
         self.name = name
+        #データセットの格納場所指定
         self.local_path = os.path.join(data_path, self.name)
         self.evaluation_setup_folder = 'evaluation_setup'
         self.evaluation_setup_path = os.path.join(self.local_path, self.evaluation_setup_folder)
@@ -52,6 +53,7 @@ class Dataset(object):
     def train(self):
         self.evaluation_data_train = []
         print(os.path.join(self.evaluation_setup_path,  'train.csv'))
+        #ファイル名と正解ラベルのついたcsvファイルを読み込む
         csv_file = open(os.path.join(self.evaluation_setup_path,  'train.csv'), "r", encoding="ms932", errors="", newline="" )
         f = csv.reader(csv_file, delimiter=",", doublequote=True, lineterminator="\r\n", quotechar='"', skipinitialspace=True)
         next(f)
@@ -63,11 +65,14 @@ class Dataset(object):
         return self.evaluation_data_train
 class DevelopmentSet(Dataset):
     def __init__(self, data_path='data'):
+        #トレーニング用データセットのインスタンス作成
         Dataset.__init__(self, data_path=data_path, name='development')
 class EvaluationSet(Dataset):
     def __init__(self, data_path='data'):
+        #評価用データセットのインスタンス作成
         Dataset.__init__(self, data_path=data_path, name='evaluation')
     def test(self):
+        #評価用データの格納場所を記録する.
         print(os.path.join(self.evaluation_setup_path,  'test.csv'))
         self.evaluation_data_test = []
         csv_file = open(os.path.join(self.evaluation_setup_path,  'test.csv'), "r", encoding="ms932", errors="", newline="" )
