@@ -9,7 +9,7 @@ import copy
 from sklearn import mixture
 #特徴量のファイル作成
 def get_feature_filename(audio_file, path, extension='cpickle'):
-    audio_filename = os.
+    audio_filename = os.path.split(audio_file)[1]
     os.path.split(audio_file)[1]
     return os.path.join(path, os.path.splitext(audio_filename)[0] + '.' + extension)
 #正規化のファイル取得
