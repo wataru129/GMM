@@ -22,10 +22,10 @@ def get_model_filename(path, extension='cpickle'):
 def get_result_filename(path, extension='txt'):
     return os.path.join(path, 'results.' + extension)
 #特徴量抽出を実行
-def do_feature_extraction(files, dataset, feature_path, params, overwrite=False):
+def do_feature_extraction(files, dataset, feature_path, params):
     for file_id, audio_filename in enumerate(files):
         # 特徴量のファイルを獲得
-        current_feature_file = get_feature_filename(audio_file=path.split(audio_filename)[1], path=feature_path)
+        current_feature_file = get_feature_filename(audio_file=os.path.split(audio_filename)[1], path=feature_path)
         y, fs = load_audio(filename=dataset.relative_to_absolute_path(audio_filename), mono=True, fs=params['fs'])
         feature_data = feature_extraction(y=y,
                                           fs=fs,
@@ -48,8 +48,7 @@ def do_feature_normalization(dataset, feature_normalizer_path, feature_path):
     # 正規化要素の計算
     normalizer.finalize()
     save_data(current_normalizer_file, normalizer)
-def do_system_training(dataset, model_path, feature_normalizer_path, feature_path, feature_params, classifier_params,
-                       classifier_method='gmm', clean_audio_errors=False, overwrite=False):
+def do_system_training(dataset, model_path, feature_normalizer_path, feature_path, feature_params, classifier_params):
     #ファイルのパス取得
     current_model_file = get_model_filename(path=model_path)
     feature_normalizer_filename = get_feature_normalizer_filename(path=feature_normalizer_path)
@@ -75,6 +74,7 @@ def do_system_training(dataset, model_path, feature_normalizer_path, feature_pat
     save_data(current_model_file, model_container)
 
 def do_system_testing(dataset, result_path, feature_path, model_path, feature_params):
+    # システムの評価
     current_result_file = get_result_filename(path=result_path)
     results = []
     model_filename = get_model_filename(path=model_path)
