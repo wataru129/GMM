@@ -25,6 +25,7 @@ general:
 # ==========================================================
 path:
   data: dataset/
+  save_data: save_data
   base: system/baseline_dcase2016_task1/
   features: save_data/features/
   feature_normalizers: save_data/feature_normalizers/

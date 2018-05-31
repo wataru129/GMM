@@ -102,7 +102,7 @@ def do_classification_gmm(feature_data, model_container):
         logls[label_id] = np.sum(model_container['models'][label].score(feature_data))
     #最も確率が高いものを記録する
     classification_result_id = np.argmax(logls)
-    return model_container['models'].keys()[classification_result_id]
+    return list(model_container['models'].keys())[classification_result_id]
 
 def do_system_evaluation(dataset, result_path):
     #評価用インスタンス作成

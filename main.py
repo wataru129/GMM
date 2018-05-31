@@ -9,12 +9,18 @@ start = time.time()
 # パラメータ設定ファイルの指定
 parameter_file = './setting/parameter.yaml'
 params = load_parameters(parameter_file)
-#params = process_parameters(params)
 dataset = eval(params['general']['development_dataset'])(data_path=params['path']['data'])
 params['features']['mfcc']['win_length'] = int(params['features']['win_length_seconds'] * params['features']['fs'])
 params['features']['mfcc']['hop_length'] = int(params['features']['hop_length_seconds'] * params['features']['fs'])
 challenge_dataset = eval(params['general']['challenge_dataset'])(data_path=params['path']['data'])
 result_path = params['path']['results']
+
+if not os.path.exists("params['path']['save_data']")
+    os.mkdir(params['path']['save_data'])
+    os.mkdir(params['path']['features'])
+    os.mkdir(params['path']['feature_normalizers'])
+    os.mkdir(params['path']['models'])
+    os.mkdir(params['path']['results'])
 
 files = []
 for item_id, item in enumerate(dataset.train(0)):
