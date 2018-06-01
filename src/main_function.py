@@ -120,3 +120,26 @@ def do_system_evaluation(dataset, result_path):
         y_pred.append(result[1])
     metric.evaluate(system_output=y_pred, annotated_ground_truth=y_true)
     results = metric.results()
+    print(results)
+#'''
+    print ("  File-wise evaluation")
+    fold_labels = ''
+    separator = '     =====================+======+======+==========+  +'
+    separator += "==========+"
+    print ("     {:20s} | {:4s} : {:4s} | {:8s} |  |".format('Scene label', 'Nref', 'Nsys', 'Accuracy','RESULTS'))
+    print (separator)
+    for label_id, label in enumerate(sorted(results['class_wise_accuracy'])):
+        fold_values = ''
+        fold_values += " {:5.1f} %  |".format(results['class_wise_accuracy'][label] * 100)
+        print ("     {:20s} | {:4d} : {:4d} | {:5.1f} %  |  |".format(label,
+                                                                     results['class_wise_data'][label]['Nref'],
+                                                                     results['class_wise_data'][label]['Nsys'],
+                                                                     results['class_wise_accuracy'][label] * 100)+fold_values)
+    print (separator)
+    fold_values = ''
+    fold_values += " {:5.1f} %  |".format(results['overall_accuracy'] * 100)
+    print ("     {:20s} | {:4d} : {:4d} | {:5.1f} %  |  |".format('Overall accuracy',
+                                                                 results['Nref'],
+                                                                 results['Nsys'],
+                                                                 results['overall_accuracy'] * 100)+fold_values)
+#'''
