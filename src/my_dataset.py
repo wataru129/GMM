@@ -50,6 +50,19 @@ class Dataset(object):
             return [0]
     def relative_to_absolute_path(self, path):
         return os.path.abspath(os.path.join(self.local_path, path))
+    def absolute_to_relative(self, path):
+        if path.startswith(os.path.abspath(self.local_path)):
+            return os.path.relpath(path, self.local_path)
+        else:
+            return path
+    def file_meta(self, file):
+        file = self.absolute_to_relative(file)
+        file_meta = []
+        for item in self.meta:
+            if self.absolute_to_relative(item['file']) == file:
+                file_meta.append(item)
+
+        return file_meta
     def train(self):
         self.evaluation_data_train = []
         print(os.path.join(self.evaluation_setup_path,  'train.csv'))
