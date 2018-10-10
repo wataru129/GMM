@@ -7,7 +7,7 @@ from src.main_function   import *
 #時間計測
 start = time.time()
 # パラメータ設定ファイルの指定
-parameter_file = './setting/parameter.yaml'
+parameter_file = './setting/parameter1.yaml'
 params = load_parameters(parameter_file)
 dataset = eval(params['general']['development_dataset'])(data_path=params['path']['data'])
 params['features']['mfcc']['win_length'] = int(params['features']['win_length_seconds'] * params['features']['fs'])
@@ -15,18 +15,18 @@ params['features']['mfcc']['hop_length'] = int(params['features']['hop_length_se
 challenge_dataset = eval(params['general']['challenge_dataset'])(data_path=params['path']['data'])
 result_path = params['path']['results']
 
-if not os.path.exists("params['path']['save_data']")
-    os.mkdir(params['path']['save_data'])
-    os.mkdir(params['path']['features'])
-    os.mkdir(params['path']['feature_normalizers'])
-    os.mkdir(params['path']['models'])
-    os.mkdir(params['path']['results'])
+#if not os.path.exists("params['path']['save_data']"):
+#    os.mkdir(params['path']['save_data'])
+#    os.mkdir(params['path']['features'])
+#    os.mkdir(params['path']['feature_normalizers'])
+#    os.mkdir(params['path']['models'])
+#    os.mkdir(params['path']['results'])
 
 files = []
-for item_id, item in enumerate(dataset.train(0)):
+for item_id, item in enumerate(dataset.train()):
     if item['file'] not in files:
         files.append(item['file'])
-for item_id, item in enumerate(dataset.test(0)):
+for item_id, item in enumerate(dataset.test()):
     if item['file'] not in files:
         files.append(item['file'])
 files = sorted(files)

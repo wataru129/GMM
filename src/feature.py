@@ -11,11 +11,9 @@ from sklearn import mixture
 # 特徴量抽出関数
 def feature_extraction(y, fs=44100, statistics=True, include_mfcc0=True, include_delta=True,
                        include_acceleration=True, mfcc_params=None, delta_params=None, acceleration_params=None):
-
     eps = numpy.spacing(1)
     # 窓関数
     window = scipy.signal.hamming(mfcc_params['n_fft'], sym=False)
-
     # 静的係数を計算する
     # librosa.stft -> 短時間フーリエ変換
     # librosa.mel  -> メルフィルタバンクを作成する
